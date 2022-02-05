@@ -43,7 +43,7 @@ var c sticky.Container
 // register a constructor
 err := sticky.Register(c, sticky.Constructor(NewService))
 // specify options
-err := sticky.Register(c, sticky.Constructor(NewService, Implements[IService](), Tag("service_tag")))
+err := sticky.Register(c, sticky.Constructor(NewService, sticky.Implements[IService](), sticky.Tag("service_tag")))
 // register a parameter
 err := sticky.Register(c, sticky.Param("http://localhost", "endpoint_tag"))
 ```
@@ -58,7 +58,7 @@ var c sticky.Container
 // resolve the service
 service, err := sticky.Resolve[*Service]()
 // with tag
-service, err := sticky.Resolve[*Service](Tag("service_tag"))
+service, err := sticky.Resolve[*Service](sticky.Tag("service_tag"))
 ```
 
 ### sticky.Extract
