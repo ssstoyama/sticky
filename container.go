@@ -46,23 +46,23 @@ func (c *container) Value(key any) any {
 }
 
 // Register registers a dependency.
-func (c *container) Register(ini register) error {
-	keys, err := ini.Keys()
+func (c *container) Register(rter register) error {
+	keys, err := rter.Keys()
 	if err != nil {
 		return err
 	}
-	dependencies, err := ini.Scopes()
+	deps, err := rter.Deps()
 	if err != nil {
 		return err
 	}
-	if err := assertNotCycle(c, dependencies); err != nil {
+	if err := assertNotCycle(c, deps); err != nil {
 		return err
 	}
-	opts := ini.Opts()
+	opts := rter.Opts()
 
 	for i := range keys {
 		key := keys[i]
-		dep := dependencies[i]
+		dep := deps[i]
 
 		if key.IsErrorType() {
 			continue

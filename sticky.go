@@ -10,13 +10,13 @@ func New(opts ...containerOption) Container {
 }
 
 // Register registers dependencies.
-func Register(ctx stickyContext, inits ...register) error {
+func Register(ctx stickyContext, rters ...register) error {
 	c, err := getContainer(ctx)
 	if err != nil {
 		return err
 	}
-	for _, ini := range inits {
-		if err := c.Register(ini); err != nil {
+	for _, rter := range rters {
+		if err := c.Register(rter); err != nil {
 			return err
 		}
 	}

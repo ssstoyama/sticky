@@ -4,7 +4,7 @@ import "reflect"
 
 type register interface {
 	Keys() ([]dKey, error)
-	Scopes() ([]*dependency, error)
+	Deps() ([]*dependency, error)
 	Opts() []registerOption
 }
 
@@ -20,8 +20,8 @@ type constructorRegister struct {
 	opts []registerOption
 }
 
-func (ini *constructorRegister) Keys() ([]dKey, error) {
-	ft := reflect.TypeOf(ini.fn)
+func (cr *constructorRegister) Keys() ([]dKey, error) {
+	ft := reflect.TypeOf(cr.fn)
 	if ft.Kind() != reflect.Func {
 		return nil, &invalidConstructorError{ft}
 	}
@@ -32,8 +32,8 @@ func (ini *constructorRegister) Keys() ([]dKey, error) {
 	return keys, nil
 }
 
-func (ini *constructorRegister) Scopes() ([]*dependency, error) {
-	fv := reflect.ValueOf(ini.fn)
+func (cr *constructorRegister) Deps() ([]*dependency, error) {
+	fv := reflect.ValueOf(cr.fn)
 	if fv.Kind() != reflect.Func {
 		return nil, &invalidConstructorError{fv.Type()}
 	}
@@ -44,8 +44,8 @@ func (ini *constructorRegister) Scopes() ([]*dependency, error) {
 	return values, nil
 }
 
-func (ini *constructorRegister) Opts() []registerOption {
-	return ini.opts
+func (cr *constructorRegister) Opts() []registerOption {
+	return cr.opts
 }
 
 func Param(value any, tag string) *paramRegister {
@@ -60,24 +60,24 @@ type paramRegister struct {
 	value any
 }
 
-func (ini *paramRegister) Keys() ([]dKey, error) {
+func (pr *paramRegister) Keys() ([]dKey, error) {
 	keys := make([]dKey, 1)
 	keys[0] = dKey{
-		t:   reflect.TypeOf(ini.value),
-		tag: ini.tag,
+		t:   reflect.TypeOf(pr.value),
+		tag: pr.tag,
 	}
 	return keys, nil
 }
 
-func (ini *paramRegister) Scopes() ([]*dependency, error) {
+func (pr *paramRegister) Deps() ([]*dependency, error) {
 	values := make([]*dependency, 1)
 	values[0] = &dependency{
-		value:   reflect.ValueOf(ini.value),
+		value:   reflect.ValueOf(pr.value),
 		isParam: true,
 	}
 	return values, nil
 }
 
-func (ini *paramRegister) Opts() []registerOption {
+func (pr *paramRegister) Opts() []registerOption {
 	return make([]registerOption, 0)
 }

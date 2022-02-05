@@ -107,16 +107,16 @@ func TestDecorate(t *testing.T) {
 
 	type A struct{ string }
 
-	ini := Constructor(func() A { return A{"value"} })
-	require.NoError(t, c.Register(ini))
+	ctor := Constructor(func() A { return A{"value"} })
+	require.NoError(t, c.Register(ctor))
 
-	keys, err := ini.Keys()
+	keys, err := ctor.Keys()
 	require.NoError(t, err)
 	v, err := c.Resolve(keys[0])
 	require.NoError(t, err)
 	assert.Equal(t, "value", v.(A).string)
 
-	keys, err = ini.Keys()
+	keys, err = ctor.Keys()
 	require.NoError(t, err)
 	require.NoError(t, c.Decorate(keys[0], func(v any) (any, error) {
 		a, ok := v.(A)
@@ -124,7 +124,7 @@ func TestDecorate(t *testing.T) {
 		a.string = "decorated"
 		return any(a), nil
 	}))
-	keys, err = ini.Keys()
+	keys, err = ctor.Keys()
 	require.NoError(t, err)
 	v, err = c.Resolve(keys[0])
 	require.NoError(t, err)
