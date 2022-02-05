@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type alreadyRegisteredError struct {
@@ -60,4 +61,16 @@ func (e *validationError) Error() string {
 
 func (e *validationError) IsError() bool {
 	return len(e.errs) > 0
+}
+
+type cycleDependencyError struct {
+	deps []reflect.Type
+}
+
+func (e *cycleDependencyError) Error() string {
+	deps := make([]string, 0, len(e.deps))
+	for i := len(e.deps) - 1; i >= 0; i-- {
+		deps = append(deps, fmt.Sprintf("%s%s", strings.Repeat(" ", len(e.deps)-i-1), pathString(e.deps[i])))
+	}
+	return fmt.Sprintf("cycle dependency error.\n%s", strings.Join(deps, "\n"))
 }

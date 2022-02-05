@@ -19,6 +19,46 @@ func assertConstructor(v reflect.Value) error {
 	return nil
 }
 
+// assertNotCycle makes sure that the dependencies are not cycle.
+func assertNotCycle(c *container, deps []*dependency) error {
+	for _, dep := range deps {
+		t := dep.value.Type()
+		if t.Kind() != reflect.Func {
+			continue
+		}
+		var cerr cycleDependencyError
+		for i := 0; i < t.NumOut(); i++ {
+			cerr.deps = append(cerr.deps, t.Out(i))
+		}
+		if err := _assertNotCycle(c, dep, cerr); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func _assertNotCycle(c *container, dep *dependency, cerr cycleDependencyError) error {
+	t := dep.value.Type()
+	for i := 0; i < t.NumIn(); i++ {
+		it := t.In(i)
+		for _, dt := range cerr.deps {
+			if it == dt {
+				cerr.deps = append(cerr.deps, it)
+				return &cerr
+			}
+		}
+		cerr.deps = append(cerr.deps, it)
+		dep, ok := c.dependencies[dKey{t: it}]
+		if !ok {
+			continue
+		}
+		if err := _assertNotCycle(c, dep, cerr); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // get constructor from context.
 func getContainer(ctx stickyContext) (*container, error) {
 	if c, ok := ctx.(*container); ok {

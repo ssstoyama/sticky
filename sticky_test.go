@@ -258,6 +258,23 @@ func TestE2EFailure(t *testing.T) {
 		err = Register(c, Param(100, "test"))
 		assert.True(t, errors.As(err, &e))
 	})
+
+	t.Run("cycle dependency", func(t *testing.T) {
+		c := New()
+
+		type A struct{}
+		type B struct{}
+		type C struct{}
+		type D struct{}
+
+		require.NoError(t, Register(c,
+			Constructor(func(d D) A { return A{} }),
+			Constructor(func(a A) (B, C) { return B{}, C{} }),
+		))
+		var e *cycleDependencyError
+		err := Register(c, Constructor(func(c C) D { return D{} }))
+		assert.True(t, errors.As(err, &e))
+	})
 }
 
 func TestWithContext(t *testing.T) {

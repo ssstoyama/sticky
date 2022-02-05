@@ -55,6 +55,9 @@ func (c *container) Register(ini register) error {
 	if err != nil {
 		return err
 	}
+	if err := assertNotCycle(c, dependencies); err != nil {
+		return err
+	}
 	opts := ini.Opts()
 
 	for i := range keys {
@@ -64,11 +67,6 @@ func (c *container) Register(ini register) error {
 		if key.IsErrorType() {
 			continue
 		}
-		if !dep.isParam {
-			if err := assertConstructor(dep.value); err != nil {
-				return err
-			}
-		}
 
 		options := registerOptions{}
 		for _, opt := range opts {
@@ -76,6 +74,12 @@ func (c *container) Register(ini register) error {
 		}
 		if err := c.applyRegisterOption(&key, dep, &options); err != nil {
 			return err
+		}
+
+		if !dep.isParam {
+			if err := assertConstructor(dep.value); err != nil {
+				return err
+			}
 		}
 
 		if _, ok := c.dependencies[key]; ok {
